@@ -1,0 +1,207 @@
+﻿@model InquiryManagementSystem.ViewModels.InquiryDetailsViewModel
+
+@{
+    ViewData["Title"] = "Inquiry Details";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Inquiry #@Model.Inquiry.InquiryId</h1>
+            <p class="text-muted">Inquiry Details</p>
+        </div>
+        <a asp-controller="Inquiries" asp-action="Index" class="btn btn-secondary">
+            Back to Dashboard
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    @if (TempData["Warning"] != null)
+    {
+        <div class="alert alert-warning">@TempData["Warning"]</div>
+    }
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Customer Information</h4>
+        </div>
+        <div class="card-body">
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <strong>Customer Name</strong>
+                    <p>@Model.Inquiry.CustomerName</p>
+                </div>
+                <div class="col-md-6">
+                    <strong>Email</strong>
+                    <p>@Model.Inquiry.CustomerEmail</p>
+                </div>
+            </div>
+
+            <hr />
+
+            <div class="mb-3">
+                <strong>Subject</strong>
+                <p>@Model.Inquiry.Subject</p>
+            </div>
+
+            <div class="mb-3">
+                <strong>Vehicle Details</strong>
+                <p>@Model.Inquiry.VehicleDetails</p>
+            </div>
+
+            <div class="mb-3">
+                <strong>Customer Message</strong>
+                <div class="border rounded p-3 bg-light">
+                    @Model.Inquiry.Message
+                </div>
+            </div>
+
+            <hr />
+
+            <div class="row">
+                <div class="col-md-4">
+                    <strong>Received At</strong>
+                    <p>@Model.Inquiry.ReceivedAt.ToString("dd MMM yyyy HH:mm")</p>
+                </div>
+                <div class="col-md-4">
+                    <strong>Status</strong>
+                    <p><span class="badge bg-warning text-dark">@Model.Inquiry.Status</span></p>
+                </div>
+                <div class="col-md-4">
+                    <strong>Email Message ID</strong>
+                    <p>@Model.Inquiry.EmailMessageId</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Add Market Rate</h4>
+        </div>
+        <div class="card-body">
+            <form asp-controller="Inquiries" asp-action="SubmitRate" method="post">
+
+                <input type="hidden" name="inquiryId" value="@Model.Inquiry.InquiryId" />
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Market Rate (₹)</strong></label>
+                    <input type="number" name="rate" class="form-control"
+                           step="0.01" min="1" required
+                           placeholder="e.g. 2850000" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Remarks</strong></label>
+                    <textarea name="remarks" class="form-control" rows="2"
+                              placeholder="e.g. Based on current market conditions"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-success">
+                    Submit Market Rate
+                </button>
+
+            </form>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Rate History</h4>
+        </div>
+        <div class="card-body">
+
+            @if (!Model.RateHistory.Any())
+            {
+                <p class="text-muted">No rates submitted yet.</p>
+            }
+            else
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Rate</th>
+                            <th>Remarks</th>
+                            <th>By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var rate in Model.RateHistory)
+                        {
+                            <tr>
+                                <td>@rate.CreatedAt.ToString("dd MMM yyyy HH:mm")</td>
+                                <td>₹ @rate.Rate.ToString("N0", new System.Globalization.CultureInfo("en-IN"))</td>
+                                <td>@rate.Remarks</td>
+                                <td>@rate.CreatedBy</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Email History</h4>
+        </div>
+        <div class="card-body">
+
+            @if (!Model.EmailHistory.Any())
+            {
+                <p class="text-muted">No emails sent yet.</p>
+            }
+            else
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Recipient</th>
+                            <th>Status</th>
+                            <th>Error</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var log in Model.EmailHistory)
+                        {
+                            <tr>
+                                <td>@log.SentAt.ToString("dd MMM yyyy HH:mm")</td>
+                                <td>@log.EmailType</td>
+                                <td>@log.RecipientEmail</td>
+                                <td>
+                                    @if (log.Status == "Sent")
+                                    {
+                                        <span class="badge bg-success">Sent</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Failed</span>
+                                    }
+                                </td>
+                                <td class="text-danger">@log.ErrorMessage</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
+        </div>
+    </div>
+
+</div>
